@@ -32,7 +32,36 @@ function formatMinutes(totalMinutes) {
 }
 
 function parseMinutesBetween(start, end) {
-  return Math.max(1, Math.round((new Date(end) - new Date(start)) / 60000))
+  const startDate = new Date(start)
+  const endDate = new Date(end)
+  if (startDate >= endDate) return 0
+
+  let totalMinutes = 0
+  const cursor = new Date(startDate)
+
+  while (cursor < endDate) {
+    const dayStart = new Date(cursor)
+    dayStart.setHours(8, 0, 0, 0)
+
+    const dayEnd = new Date(cursor)
+    dayEnd.setHours(17, 0, 0, 0)
+
+    const dayOfWeek = cursor.getDay()
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5
+
+    if (isWeekday) {
+      const effectiveStart = new Date(Math.max(cursor.getTime(), dayStart.getTime()))
+      const effectiveEnd = new Date(Math.min(endDate.getTime(), dayEnd.getTime()))
+
+      if (effectiveStart < effectiveEnd) {
+        totalMinutes += Math.round((effectiveEnd - effectiveStart) / 60000)
+      }
+    }
+
+    cursor.setHours(24, 0, 0, 0)
+  }
+
+  return Math.max(0, totalMinutes)
 }
 
 function downloadCsv(filename, rows) {
